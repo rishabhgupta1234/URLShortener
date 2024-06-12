@@ -1,34 +1,29 @@
 const express = require("express");
 const app = express();
+const path = require("path");
 const urlRoute = require("./routes/url");
 const connectToMongo = require("./db");
 const PORT = 8001;
 const URL = require("./models/url");
+const staticRoute = require("./routes/staticRouter");
 
 connectToMongo("mongodb://127.0.0.1:27017/short-url");
 
+app.set("view engine", "ejs");
+app.set("views", path.resolve("./views"));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-app.get("/test", async (req, res) => {
-	// return res.end("<h1>This is server side rendering</h1>");
-	// return res.end("<h1>It is server side rendering</h1>");
-
-	const allUrls = await URL.find({});
-	return res.end(`
-	<html>
-<head>
-</head>
-<body>
-<ol>
-${allUrls.map((url) => `<li> ${url.shortId} - ${url.redirectURL} - ${url.visitHistory.length}</li>`).join()}
-</ol>
-</body>
-	</html>
-	`);
-});
-
+// app.get("/test", async (req, res) => {
+// 	const allUrls = await URL.find({});
+// 	return res.render("home", {
+// 		urls: allUrls,
+// 	});
+// });
 app.use("/url", urlRoute);
 // app.use("/url", urlRoute);
+app.use("/", staticRoute);
 
 app.get("/url/:shortId", async (req, res) => {
 	const shortId = req.params.shortId;
@@ -50,7 +45,8 @@ app.get("/url/:shortId", async (req, res) => {
 	);
 	// res.json(entry);
 	// res.redirect(req.params.id, entry.redirectURL.bind(entry));
-	res.redirect("https://" + entry.redirectURL);
+	// res.redirect("https://" + entry.redirectURL);
+	res.redirect(entry.redirectURL);
 });
 
 app.listen(PORT, () => {

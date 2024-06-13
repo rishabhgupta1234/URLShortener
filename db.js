@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 
-// const mongoURI = "mongodb://127.0.0.1:27017/youtube-app-1";
-
 const connectToMongo = (mongoURI) => {
 	mongoose
 		.connect(mongoURI)

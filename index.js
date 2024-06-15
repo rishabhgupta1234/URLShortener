@@ -1,7 +1,8 @@
 const express = require("express");
 const app = express();
 const path = require("path");
-
+const cookieParser = require("cookie-parser");
+const { restrictToLoggedinUserOnly, checkAuth } = require("./middlewares/auth");
 const connectToMongo = require("./db");
 const PORT = 8001;
 const URL = require("./models/url");
@@ -16,17 +17,11 @@ app.set("views", path.resolve("./views"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-// app.get("/test", async (req, res) => {
-// 	const allUrls = await URL.find({});
-// 	return res.render("home", {
-// 		urls: allUrls,
-// 	});
-// });
-app.use("/url", urlRoute);
+app.use("/url", restrictToLoggedinUserOnly, urlRoute);
 app.use("/user", userRoute);
-// app.use("/url", urlRoute);
-app.use("/", staticRoute);
+app.use("/", checkAuth, staticRoute);
 
 app.get("/url/:shortId", async (req, res) => {
 	const shortId = req.params.shortId;
@@ -46,9 +41,7 @@ app.get("/url/:shortId", async (req, res) => {
 			},
 		}
 	);
-	// res.json(entry);
-	// res.redirect(req.params.id, entry.redirectURL.bind(entry));
-	// res.redirect("https://" + entry.redirectURL);
+
 	res.redirect(entry.redirectURL);
 });
 
